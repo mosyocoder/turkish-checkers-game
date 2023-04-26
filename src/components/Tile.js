@@ -11,7 +11,7 @@ function Tile({ prop }) {
 	};
 
 	return (
-		<div onClick={() => handleClick(prop)} className={`tile ${prop.className}`}>
+		<div onClick={() => handleClick(prop)} className={`tile ${prop.className} ${prop.isMovable ? "movable" : ""}`}>
 			{prop.isFull === true && <Stone prop={prop} />}
 		</div>
 	);
