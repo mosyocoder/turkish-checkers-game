@@ -9,70 +9,75 @@ export const gameSlice = createSlice({
 		white: 16,
 		black: 16,
 		selectedTile: "",
-		movableTiles: [],
+		breakableTiles: [],
 	},
 	reducers: {
 		selectTile: (state, action) => {
+			state.board = state.board.map((tile) => {
+				if (tile.isMovable) tile.isMovable = false;
+				return tile;
+			});
 			if (action.payload.stoneColor === state.player) {
+				state.selectedTile = action.payload;
+				let rightTile, leftTile, nextTile;
+				if (state.player === "white") {
+					if (state.selectedTile.name[1] === "a") {
+						rightTile = state.board[Number(state.selectedTile.id) + 1].id;
+						nextTile = state.board[Number(state.selectedTile.id) + 8].id;
+					} else if (state.selectedTile.name[1] === "h") {
+						leftTile = state.board[Number(state.selectedTile.id) - 1].id;
+						nextTile = state.board[Number(state.selectedTile.id) + 8].id;
+					} else {
+						rightTile = state.board[Number(state.selectedTile.id) + 1].id;
+						leftTile = state.board[Number(state.selectedTile.id) - 1].id;
+						nextTile = state.board[Number(state.selectedTile.id) + 8].id;
+					}
+				} else {
+					if (state.selectedTile.name[1] === "a") {
+						rightTile = state.board[Number(state.selectedTile.id) + 1].id;
+						nextTile = state.board[Number(state.selectedTile.id) - 8].id;
+					} else if (state.selectedTile.name[1] === "h") {
+						leftTile = state.board[Number(state.selectedTile.id) - 1].id;
+						nextTile = state.board[Number(state.selectedTile.id) - 8].id;
+					} else {
+						rightTile = state.board[Number(state.selectedTile.id) + 1].id;
+						leftTile = state.board[Number(state.selectedTile.id) - 1].id;
+						nextTile = state.board[Number(state.selectedTile.id) - 8].id;
+					}
+				}
+				let whiBla;
+				state.player === "white" ? (whiBla = +1) : (whiBla = -1);
 				state.board = state.board.map((tile) => {
-					if (tile.isMovable === true) {
-						tile.isMovable = false;
+					if ((tile.id === rightTile || tile.id === leftTile || tile.id === nextTile) && tile.isFull === false) {
+						tile.isMovable = true;
+					}
+					if ((tile.id === rightTile || tile.id === leftTile || tile.id === nextTile) && tile.isFull && tile.stoneColor !== state.player) {
+						let incDec = whiBla * 8;
+						state.breakableTiles.push(tile.id);
+						state.board[Number(tile.id) + incDec].isMovable = true;
 					}
 					return tile;
 				});
-				state.selectedTile = action.payload;
-				if (state.player === "white") {
-					let rightTile, leftTile, nextTile;
-					if (state.selectedTile.name[1] === "a") {
-						state.movableTiles.push(state.board[Number(state.selectedTile.id) + 1].id);
-						state.movableTiles.push(state.board[Number(state.selectedTile.id) + 8].id);
-						// state.board = state.board.map((tile) => {
-						// 	if ((tile.id === rightTile || tile.id === nextTile) && tile.isFull === false) {
-						// 		tile.isMovable = true;
-						// 	}
-						// 	return tile;
-						// });
-					} else if (state.selectedTile.name[1] === "h") {
-						state.movableTiles.push(state.board[Number(state.selectedTile.id) - 1].id);
-						state.movableTiles.push(state.board[Number(state.selectedTile.id) + 8].id);
-						// state.board = state.board.map((tile) => {
-						// 	if ((tile.id === leftTile || tile.id === nextTile) && tile.isFull === false) {
-						// 		tile.isMovable = true;
-						// 	}
-						// 	return tile;
-						// });
-					} else {
-						state.movableTiles.push(state.board[Number(state.selectedTile.id) + 1].id);
-						state.movableTiles.push(state.board[Number(state.selectedTile.id) - 1].id);
-						state.movableTiles.push(state.board[Number(state.selectedTile.id) + 8].id);
-						// state.board = state.board.map((tile) => {
-						// 	if ((tile.id === rightTile || tile.id === leftTile || tile.id === nextTile) && tile.isFull === false) {
-						// 		tile.isMovable = true;
-						// 	}
-						// 	return tile;
-						// });
-					}
-					state.board = state.board.map((tile) => {
-						for (let i = 0; i < state.movableTiles.length; i++) {
-							if (tile.id === state.movableTiles[i] && tile.isFull === false) {
-								tile.isMovable = true;
-							}
-						}
-						return tile;
-					});
-				} else {
-					if (state.selectedTile.name[1] === "a") {
-						console.log(state.board[Number(state.selectedTile.id) - 8].isFull);
-					} else if (state.selectedTile.name[1] === "h") {
-						console.log(state.board[Number(state.selectedTile.id) - 8].isFull);
-					} else {
-						console.log(state.board[Number(state.selectedTile.id) - 8].isFull);
-					}
-				}
 			}
+		},
+		moveStone: (state, action) => {
+			state.board = state.board.map((tile) => {
+				if (tile.isMovable) tile.isMovable = false;
+				if (tile.id === state.selectedTile.id) {
+					tile.isFull = false;
+				}
+				if (tile.id === action.payload.id) {
+					tile.isFull = true;
+					tile.stoneColor = state.player;
+					tile.isMovable = false;
+				}
+				return tile;
+			});
+			state.selectedTile = "";
+			state.player === "white" ? (state.player = "black") : (state.player = "white");
 		},
 	},
 });
 
-export const { selectTile } = gameSlice.actions;
+export const { selectTile, moveStone } = gameSlice.actions;
 export default gameSlice.reducer;

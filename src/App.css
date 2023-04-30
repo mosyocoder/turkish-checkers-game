@@ -108,3 +108,8 @@ body{
 .movable{
     background-color: greenyellow;
 }
+
+.selected{
+    border: 5px solid red;
+    border-radius: 50%;
+}
